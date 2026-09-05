@@ -1,0 +1,628 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>CraftPanel</title>
+<meta name="description" content="A self-hosted Minecraft server manager — one-click setup, a live console, auto-updates, and backups to your own cloud." />
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 32 32%22><text y=%2224%22 font-size=%2224%22>⛏️</text></svg>" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700;9..40,800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+  /* ============================= tokens ============================= */
+  :root {
+    /* dark-first: bare :root carries the dark palette (the unstamped
+       "system" default matches this app's own dark-first shell) */
+    --bg: #0a0908;
+    --surface: #141210;
+    --surface-2: #1a1613;
+    --border: #27231f;
+    --border-soft: #201c19;
+    --ink: #f7f4f1;
+    --ink-dim: #a89f92;
+    --ink-faint: #756c60;
+    --accent: #fd9117;
+    --accent-2: #fbc02d;
+    --accent-ink: #17100a;
+    --shadow-accent: 0 0 60px -20px rgba(253, 145, 23, 0.35);
+
+    --font-display: "DM Sans", system-ui, sans-serif;
+    --font-body: "DM Sans", system-ui, sans-serif;
+    --font-mono: "DM Mono", "SFMono-Regular", Consolas, monospace;
+
+    color-scheme: dark;
+  }
+
+  @media (prefers-color-scheme: light) {
+    :root:not([data-theme="dark"]) {
+      --bg: #faf7f3;
+      --surface: #ffffff;
+      --surface-2: #f2ece3;
+      --border: #e6dcce;
+      --border-soft: #ede6da;
+      --ink: #211c17;
+      --ink-dim: #71675a;
+      --ink-faint: #a39a8c;
+      --accent: #e07a0e;
+      --accent-2: #b9800f;
+      --accent-ink: #fffaf3;
+      --shadow-accent: 0 0 60px -24px rgba(224, 122, 14, 0.25);
+      color-scheme: light;
+    }
+  }
+
+  :root[data-theme="light"] {
+    --bg: #faf7f3;
+    --surface: #ffffff;
+    --surface-2: #f2ece3;
+    --border: #e6dcce;
+    --border-soft: #ede6da;
+    --ink: #211c17;
+    --ink-dim: #71675a;
+    --ink-faint: #a39a8c;
+    --accent: #e07a0e;
+    --accent-2: #b9800f;
+    --accent-ink: #fffaf3;
+    --shadow-accent: 0 0 60px -24px rgba(224, 122, 14, 0.25);
+    color-scheme: light;
+  }
+
+  /* ============================= reset ============================= */
+  *, *::before, *::after { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--font-body);
+    font-size: 16px;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+  img, svg { display: block; max-width: 100%; }
+  a { color: inherit; }
+  button { font: inherit; color: inherit; }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; }
+  }
+
+  /* ============================= layout ============================= */
+  .wrap { max-width: 1120px; margin: 0 auto; padding: 0 28px; }
+  .rule { border-top: 1px solid var(--border-soft); }
+
+  /* faint diagonal-line motif, echoing the hero backdrop this brand's
+     other site uses — kept much quieter here since it sits behind text */
+  .grid-motif {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background-image:
+      repeating-linear-gradient(115deg, transparent 0 68px, color-mix(in srgb, var(--accent) 14%, transparent) 68px 69px, transparent 69px 140px);
+    -webkit-mask-image: linear-gradient(to bottom, black, transparent 75%);
+            mask-image: linear-gradient(to bottom, black, transparent 75%);
+    opacity: 0.5;
+  }
+
+  /* ============================= nav ============================= */
+  header.site {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    background: color-mix(in srgb, var(--bg) 86%, transparent);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--border-soft);
+  }
+  .nav {
+    display: flex;
+    align-items: center;
+    gap: 28px;
+    height: 64px;
+  }
+  .wordmark {
+    font-family: var(--font-mono);
+    font-size: 14px;
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .wordmark .dot {
+    width: 7px; height: 7px; border-radius: 999px;
+    background: var(--accent);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 20%, transparent);
+  }
+  .nav-links {
+    display: flex;
+    gap: 24px;
+    margin-left: 8px;
+    flex: 1;
+  }
+  .nav-links a {
+    font-size: 12.5px;
+    font-weight: 500;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    text-decoration: none;
+    color: var(--ink-dim);
+    transition: color 150ms ease;
+  }
+  .nav-links a:hover { color: var(--ink); }
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    height: 38px;
+    padding: 0 18px;
+    border-radius: 4px;
+    font-size: 13.5px;
+    font-weight: 600;
+    text-decoration: none;
+    border: 1px solid transparent;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: transform 150ms ease, box-shadow 150ms ease, background 150ms ease, border-color 150ms ease;
+  }
+  .btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .btn-primary {
+    background: var(--accent);
+    color: var(--accent-ink);
+    box-shadow: var(--shadow-accent);
+  }
+  .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 0 70px -18px rgba(253, 145, 23, 0.5); }
+  .btn-ghost {
+    background: transparent;
+    border-color: var(--border);
+    color: var(--ink);
+  }
+  .btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
+  .btn-sm { height: 32px; padding: 0 14px; font-size: 12.5px; }
+
+  /* ============================= hero ============================= */
+  .hero { position: relative; padding: 96px 0 88px; overflow: hidden; }
+  .eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 12px 6px 10px;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    letter-spacing: 0.04em;
+    color: var(--ink-dim);
+    background: color-mix(in srgb, var(--surface) 60%, transparent);
+  }
+  .eyebrow .pulse {
+    width: 6px; height: 6px; border-radius: 999px;
+    background: #4ade80;
+    box-shadow: 0 0 0 0 rgba(74, 222, 128, 0.6);
+    animation: pulse 2.2s ease-out infinite;
+  }
+  @keyframes pulse {
+    0% { box-shadow: 0 0 0 0 rgba(74, 222, 128, 0.5); }
+    70% { box-shadow: 0 0 0 7px rgba(74, 222, 128, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(74, 222, 128, 0); }
+  }
+  .hero-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 56px;
+    margin-top: 28px;
+  }
+  @media (min-width: 980px) {
+    .hero-grid { grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr); align-items: center; gap: 40px; }
+  }
+  h1.headline {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: clamp(34px, 5.4vw, 54px);
+    line-height: 1.06;
+    letter-spacing: -0.02em;
+    margin: 18px 0 0;
+    text-wrap: balance;
+  }
+  h1.headline em {
+    font-style: normal;
+    color: var(--accent);
+  }
+  .lede {
+    margin: 20px 0 0;
+    font-size: 17px;
+    line-height: 1.65;
+    color: var(--ink-dim);
+    max-width: 46ch;
+  }
+  .cta-row { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 30px; }
+  .fine-print {
+    margin-top: 14px;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--ink-faint);
+    letter-spacing: 0.02em;
+  }
+
+  /* --- hero mockup: a stylized, drawn app window, not a screenshot --- */
+  .mockup {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: var(--surface);
+    box-shadow: 0 40px 90px -40px rgba(0,0,0,0.6), var(--shadow-accent);
+    overflow: hidden;
+    transform: perspective(1400px) rotateY(-4deg) rotateX(1deg);
+  }
+  .mockup-bar {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--border-soft);
+    background: var(--surface-2);
+  }
+  .mockup-bar span { width: 9px; height: 9px; border-radius: 999px; background: var(--border); }
+  .mockup-bar .title {
+    margin-left: 8px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--ink-faint);
+    letter-spacing: 0.03em;
+  }
+  .mockup-body { display: grid; grid-template-columns: 148px 1fr; min-height: 260px; }
+  .mockup-side { border-right: 1px solid var(--border-soft); padding: 14px 10px; background: color-mix(in srgb, var(--surface) 92%, black 4%); }
+  .mockup-row {
+    display: flex; align-items: center; gap: 8px;
+    padding: 8px 8px; border-radius: 6px; margin-bottom: 4px;
+  }
+  .mockup-row.active { background: color-mix(in srgb, var(--accent) 14%, transparent); }
+  .mockup-row .rdot { width: 6px; height: 6px; border-radius: 999px; background: var(--ink-faint); flex-shrink: 0; }
+  .mockup-row.active .rdot { background: #4ade80; box-shadow: 0 0 0 2px color-mix(in srgb, #4ade80 25%, transparent); }
+  .mockup-row .bar { height: 6px; border-radius: 3px; background: var(--border); flex: 1; }
+  .mockup-row.active .bar { background: color-mix(in srgb, var(--ink) 55%, transparent); }
+  .mockup-main { padding: 16px 18px; font-family: var(--font-mono); font-size: 11.5px; line-height: 1.9; color: var(--ink-faint); }
+  .mockup-main .ok { color: #4ade80; }
+  .mockup-main .warn { color: var(--accent-2); }
+  .mockup-main .accent { color: var(--accent); }
+  .mockup-main .in {
+    animation: type-in 400ms ease both;
+    animation-timeline: view();
+  }
+  @keyframes type-in { from { opacity: 0; transform: translateY(3px); } to { opacity: 1; transform: none; } }
+  .caret { display: inline-block; width: 6px; height: 12px; background: var(--accent); vertical-align: -2px; animation: blink 1s steps(1) infinite; }
+  @keyframes blink { 50% { opacity: 0; } }
+
+  /* ============================= section shell ============================= */
+  section { padding: 84px 0; }
+  .section-head { max-width: 640px; }
+  .kicker {
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--accent);
+  }
+  h2.section-title {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: clamp(24px, 3.4vw, 32px);
+    letter-spacing: -0.015em;
+    margin: 10px 0 0;
+    text-wrap: balance;
+  }
+  .section-sub { margin: 12px 0 0; color: var(--ink-dim); font-size: 15px; max-width: 54ch; }
+
+  /* ---- features: a set, not a sequence — grid with icon marks, no numbers ---- */
+  .feature-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 1px;
+    margin-top: 44px;
+    background: var(--border-soft);
+    border: 1px solid var(--border-soft);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  .feature {
+    background: var(--bg);
+    padding: 26px 24px;
+  }
+  .feature-mark {
+    width: 34px; height: 34px;
+    border-radius: 7px;
+    display: grid; place-items: center;
+    background: color-mix(in srgb, var(--accent) 12%, transparent);
+    color: var(--accent);
+  }
+  .feature h3 {
+    font-family: var(--font-display);
+    font-size: 15.5px;
+    font-weight: 700;
+    margin: 16px 0 0;
+  }
+  .feature p { margin: 8px 0 0; font-size: 13.8px; line-height: 1.6; color: var(--ink-dim); }
+
+  /* ---- loaders strip ---- */
+  .loaders {
+    display: flex; flex-wrap: wrap; gap: 10px; margin-top: 20px;
+  }
+  .loader-chip {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    padding: 7px 12px;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    color: var(--ink-dim);
+  }
+
+  /* ---- how it works: a real sequence — numbers earn their keep here ---- */
+  .steps { margin-top: 48px; }
+  .step {
+    display: grid;
+    grid-template-columns: 56px 1fr;
+    gap: 20px;
+    padding: 26px 0;
+    border-top: 1px solid var(--border-soft);
+  }
+  .step:last-child { border-bottom: 1px solid var(--border-soft); }
+  .step-num {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    color: color-mix(in srgb, var(--ink) 30%, transparent);
+    padding-top: 2px;
+  }
+  .step h3 { font-family: var(--font-display); font-size: 17px; font-weight: 700; margin: 0; }
+  .step p { margin: 6px 0 0; color: var(--ink-dim); font-size: 14.5px; max-width: 56ch; }
+
+  /* ---- final CTA ---- */
+  .cta-band {
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 56px 40px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+    background: radial-gradient(ellipse 60% 100% at 50% 0%, color-mix(in srgb, var(--accent) 10%, transparent), transparent 70%);
+  }
+  .cta-band h2 {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: clamp(24px, 4vw, 34px);
+    letter-spacing: -0.02em;
+    margin: 0;
+    text-wrap: balance;
+  }
+  .cta-band p { color: var(--ink-dim); margin: 12px 0 0; }
+  .cta-band .cta-row { justify-content: center; margin-top: 26px; }
+
+  /* ============================= footer ============================= */
+  footer.site {
+    border-top: 1px solid var(--border-soft);
+    padding: 48px 0 36px;
+  }
+  .footer-grid {
+    display: flex; flex-wrap: wrap; justify-content: space-between; gap: 24px;
+    padding-bottom: 28px;
+  }
+  .footer-tagline { color: var(--ink-faint); font-size: 13px; margin-top: 8px; max-width: 32ch; }
+  .footer-links { display: flex; gap: 22px; flex-wrap: wrap; }
+  .footer-links a {
+    font-size: 12.5px; color: var(--ink-dim); text-decoration: none;
+    letter-spacing: 0.03em;
+  }
+  .footer-links a:hover { color: var(--accent); }
+  .footer-bottom {
+    display: flex; justify-content: space-between; flex-wrap: wrap; gap: 10px;
+    padding-top: 22px; border-top: 1px solid var(--border-soft);
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    color: var(--ink-faint);
+  }
+
+  ::selection { background: color-mix(in srgb, var(--accent) 30%, transparent); }
+</style>
+</head>
+<body>
+
+  <header class="site">
+    <div class="wrap nav">
+      <a class="wordmark" href="#top"><span class="dot"></span>CRAFTPANEL</a>
+      <nav class="nav-links">
+        <a href="#features">Features</a>
+        <a href="#how">How it works</a>
+        <a href="#loaders">Server types</a>
+      </nav>
+      <a class="btn btn-ghost btn-sm" href="https://github.com/Rashica07/craftpanel" target="_blank" rel="noreferrer">GitHub</a>
+      <a class="btn btn-primary btn-sm" href="https://github.com/Rashica07/craftpanel/releases" target="_blank" rel="noreferrer">Download</a>
+    </div>
+  </header>
+
+  <main id="top">
+    <section class="hero">
+      <div class="grid-motif" aria-hidden="true"></div>
+      <div class="wrap">
+        <span class="eyebrow"><span class="pulse"></span> v2.0 — Bedrock, modpacks &amp; auto-update</span>
+        <div class="hero-grid">
+          <div>
+            <h1 class="headline">Run a Minecraft server <em>without touching a terminal.</em></h1>
+            <p class="lede">
+              CraftPanel downloads the server, sets it up, keeps it running, and hands
+              you an address to share. Vanilla, Paper, Fabric, Forge, NeoForge,
+              Bedrock, or a modpack picked straight off Modrinth — pick a flavour and
+              press start.
+            </p>
+            <div class="cta-row">
+              <a class="btn btn-primary" href="https://github.com/Rashica07/craftpanel/releases" target="_blank" rel="noreferrer">Download CraftPanel</a>
+              <a class="btn btn-ghost" href="#features">See what it does</a>
+            </div>
+            <p class="fine-print">macOS 10.15+ and Windows 10/11 · Self-hosted · Free</p>
+          </div>
+
+          <div class="mockup" role="img" aria-label="CraftPanel console, showing a running server and a live log">
+            <div class="mockup-bar">
+              <span></span><span></span><span></span>
+              <span class="title">craftpanel — Skyblock Sunday</span>
+            </div>
+            <div class="mockup-body">
+              <div class="mockup-side">
+                <div class="mockup-row active"><span class="rdot"></span><span class="bar" style="max-width:70%"></span></div>
+                <div class="mockup-row"><span class="rdot"></span><span class="bar" style="max-width:55%"></span></div>
+                <div class="mockup-row"><span class="rdot"></span><span class="bar" style="max-width:62%"></span></div>
+                <div class="mockup-row"><span class="rdot"></span><span class="bar" style="max-width:40%"></span></div>
+              </div>
+              <div class="mockup-main">
+                <div>Starting Paper 1.21.4…</div>
+                <div>Preparing spawn area: <span class="accent">100%</span></div>
+                <div><span class="ok">Done</span> (9.4s)! For help, type "help"</div>
+                <div>mossyPixel joined the game</div>
+                <div><span class="warn">⚠</span> world backed up — scheduled</div>
+                <div>&gt; <span class="caret"></span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="rule"></div>
+
+    <section id="features">
+      <div class="wrap">
+        <div class="section-head">
+          <span class="kicker">Features</span>
+          <h2 class="section-title">Everything a small server needs, nothing it doesn't</h2>
+          <p class="section-sub">
+            Built for the person running the server for their friends, not a hosting company's ops team.
+          </p>
+        </div>
+
+        <div class="feature-grid">
+          <article class="feature">
+            <div class="feature-mark" aria-hidden="true">⛏</div>
+            <h3>One-click setup</h3>
+            <p>Vanilla, Paper, Fabric, Forge, NeoForge, or Bedrock — CraftPanel fetches the right files and configures the port, RAM, and Java for you.</p>
+          </article>
+          <article class="feature">
+            <div class="feature-mark" aria-hidden="true">📦</div>
+            <h3>One-click modpacks</h3>
+            <p>Search Modrinth, pick a pack. Loader and Minecraft version come from the pack itself — nothing to match up by hand.</p>
+          </article>
+          <article class="feature">
+            <div class="feature-mark" aria-hidden="true">▶</div>
+            <h3>A real console</h3>
+            <p>Live logs, RCON commands, broadcasts, whitelist and ops — everything you'd SSH in for, in one window.</p>
+          </article>
+          <article class="feature">
+            <div class="feature-mark" aria-hidden="true">⬇</div>
+            <h3>Signed auto-updates</h3>
+            <p>CraftPanel checks, downloads, and installs its own updates from Settings. No reinstalling by hand.</p>
+          </article>
+          <article class="feature">
+            <div class="feature-mark" aria-hidden="true">☁</div>
+            <h3>Scheduled &amp; cloud backups</h3>
+            <p>Local backups on a schedule, restorable in one click — and optionally pushed off-machine to your own Cloudflare R2 bucket.</p>
+          </article>
+          <article class="feature">
+            <div class="feature-mark" aria-hidden="true">🔗</div>
+            <h3>Share it in one link</h3>
+            <p>A join address and QR code, generated the moment your server's up — no port-forwarding explainer required.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <div class="rule"></div>
+
+    <section id="loaders">
+      <div class="wrap">
+        <div class="section-head">
+          <span class="kicker">Server types</span>
+          <h2 class="section-title">Whatever you and your friends actually want to play</h2>
+        </div>
+        <div class="loaders">
+          <span class="loader-chip">Vanilla</span>
+          <span class="loader-chip">Paper</span>
+          <span class="loader-chip">Fabric</span>
+          <span class="loader-chip">Forge</span>
+          <span class="loader-chip">NeoForge</span>
+          <span class="loader-chip">Bedrock</span>
+          <span class="loader-chip">Modrinth modpacks</span>
+        </div>
+      </div>
+    </section>
+
+    <div class="rule"></div>
+
+    <section id="how">
+      <div class="wrap">
+        <div class="section-head">
+          <span class="kicker">How it works</span>
+          <h2 class="section-title">Three steps, start to finish</h2>
+        </div>
+        <div class="steps">
+          <div class="step">
+            <div class="step-num">01</div>
+            <div>
+              <h3>Pick a flavour</h3>
+              <p>Vanilla, Paper, Fabric, Forge — or search for a modpack instead. CraftPanel downloads the right files for you.</p>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-num">02</div>
+            <div>
+              <h3>Press Start</h3>
+              <p>No config files, no Java flags, no terminal. It just boots — and CraftPanel offers to install Java itself if you don't have it.</p>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-num">03</div>
+            <div>
+              <h3>Send the address</h3>
+              <p>One click makes a link — and a QR code — your friends can join from anywhere.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="rule"></div>
+
+    <section>
+      <div class="wrap">
+        <div class="cta-band">
+          <h2>Your server, running in a few minutes.</h2>
+          <p>Free, self-hosted, and yours to run — on your own machine, no subscription.</p>
+          <div class="cta-row">
+            <a class="btn btn-primary" href="https://github.com/Rashica07/craftpanel/releases" target="_blank" rel="noreferrer">Download CraftPanel</a>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site">
+    <div class="wrap">
+      <div class="footer-grid">
+        <div>
+          <a class="wordmark" href="#top"><span class="dot"></span>CRAFTPANEL</a>
+          <p class="footer-tagline">Self-hosted Minecraft server management. Yours to run.</p>
+        </div>
+        <nav class="footer-links">
+          <a href="#features">Features</a>
+          <a href="#how">How it works</a>
+          <a href="#loaders">Server types</a>
+          <a href="https://github.com/Rashica07/craftpanel" target="_blank" rel="noreferrer">GitHub</a>
+        </nav>
+      </div>
+      <div class="footer-bottom">
+        <span>© 2026 CraftPanel</span>
+        <span>Built by the same hands as kiqa-dev.it</span>
+      </div>
+    </div>
+  </footer>
+
+</body>
+</html>
