@@ -289,8 +289,8 @@
       // nobody can be charged by accident. Neither value is a secret —
       // the publishable key is meant to be public — see
       // /licensing/README.md for where each comes from.
-      var LICENSING_API = null; // e.g. "https://craftpanel-licensing.<you>.workers.dev"
-      var STRIPE_PUBLISHABLE_KEY = null; // e.g. "pk_live_..." from the Stripe Dashboard
+      var LICENSING_API = "https://craftpanel-licensing.kristiangjergji20.workers.dev"; // deployed, live
+      var STRIPE_PUBLISHABLE_KEY = null; // e.g. "pk_live_..." from the Stripe Dashboard — set this to actually enable checkout
 
       var toast = document.getElementById("toast");
       var timer = null;
