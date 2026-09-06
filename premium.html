@@ -200,7 +200,7 @@
         </div>
 
         <div class="status-banner" role="status">
-          <span><strong>Checkout isn't live yet.</strong> Premium is still in development — the buttons below won't charge you. Watch the GitHub repo for the release that turns this on.</span>
+          <span><strong>Premium's features aren't built yet.</strong> Checkout itself works, but there's nothing to unlock in the app today — a key you buy now is real and will work once automation/monitoring/etc. ship, not before.</span>
         </div>
 
         <div class="plan-grid">
@@ -290,7 +290,7 @@
       // the publishable key is meant to be public — see
       // /licensing/README.md for where each comes from.
       var LICENSING_API = "https://craftpanel-licensing.kristiangjergji20.workers.dev"; // deployed, live
-      var STRIPE_PUBLISHABLE_KEY = null; // e.g. "pk_live_..." from the Stripe Dashboard — set this to actually enable checkout
+      var STRIPE_PUBLISHABLE_KEY = "pk_test_51TuJj2CxOclMsWNarFJKVqbqyt3OuKA74bqgLBZXLg201Rp6YoNruHfvjJ8slwK9ypRILHewPwUZ5302y1Nqpepf00buJDA9I5"; // TEST MODE — no real card can be charged with this key
 
       var toast = document.getElementById("toast");
       var timer = null;
