@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://rashica07.github.io/craftpanel-site/sitemap.xml
