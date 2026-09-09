@@ -224,6 +224,8 @@
           </div>
         </div>
         <p class="price-note">Prices in EUR, excluding any tax your country applies at checkout.</p>
+        <p class="price-note">Questions, refunds, or cancellations: <a href="mailto:contact@kiqa-dev.it">contact@kiqa-dev.it</a>
+          — see the <a href="tos.html">refund policy</a>.</p>
       </div>
     </section>
 
@@ -325,10 +327,16 @@
             return;
           }
           btn.disabled = true;
+          // Send our own real URL rather than trusting the Worker to guess
+          // it from the Origin header — that header has no path, so on a
+          // GitHub Pages *project* site (served under /craftpanel-site/,
+          // not the domain root) a guessed URL 404s after checkout.
+          var returnUrl = window.location.origin + window.location.pathname +
+            "?checkout=success&session_id={CHECKOUT_SESSION_ID}";
           fetch(LICENSING_API + "/api/checkout", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ plan: plan }),
+            body: JSON.stringify({ plan: plan, returnUrl: returnUrl }),
           })
             .then(function (r) { return r.json(); })
             .then(function (data) {
