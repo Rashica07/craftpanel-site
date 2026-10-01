@@ -35,7 +35,7 @@
     margin-top: 32px;
   }
   @media (min-width: 700px) {
-    .dl-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .dl-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   }
   .dl-card {
     border: 1px solid var(--border);
@@ -134,8 +134,8 @@
         <span class="kicker">Downloads</span>
         <h1>Get CraftPanel</h1>
         <p class="lede" style="max-width:56ch">
-          Pulled live from GitHub Releases — this page always shows whatever's actually
-          published, no separate copy to keep in sync by hand.
+          Native apps for Mac and Windows, pulled live from GitHub Releases — this page always
+          shows whatever's actually published.
         </p>
         <div id="version-pill-slot" style="margin-top:16px"></div>
       </div>
@@ -147,7 +147,6 @@
       <div class="wrap">
         <div id="dl-content">
           <div class="dl-grid">
-            <div class="dl-skeleton"></div>
             <div class="dl-skeleton"></div>
             <div class="dl-skeleton"></div>
           </div>
@@ -183,7 +182,7 @@
   <script>
     (function () {
       var REPO = "Rashica07/craftpanel";
-      var CACHE_KEY = "cp_latest_release_v1";
+      var CACHE_KEY = "cp_native_releases_v1";
       var CACHE_TTL_MS = 10 * 60 * 1000; // 10 min — plenty fresh, spares the API on repeat views
       var GITHUB_RELEASES_URL = "https://github.com/" + REPO + "/releases";
 
@@ -207,18 +206,18 @@
         return e;
       }
 
-      function renderVersionPill(release) {
+      function renderVersionPill(mac, win) {
         var slot = document.getElementById("version-pill-slot");
-        var date = new Date(release.published_at);
-        var pill = el(
-          "span",
-          "dl-version-pill",
-          '<span class="dot"></span> ' +
-            release.tag_name +
-            " — released " +
-            date.toLocaleDateString(undefined, { year: "numeric", month: "long", day: "numeric" })
-        );
-        slot.appendChild(pill);
+        slot.innerHTML = "";
+        function part(label, release) {
+          if (!release) return null;
+          var date = new Date(release.published_at);
+          return label + " " + release.tag_name.replace(/^[a-z]+-v/, "") + " (" +
+            date.toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" }) + ")";
+        }
+        var parts = [part("Mac", mac), part("Windows", win)].filter(Boolean);
+        if (!parts.length) return;
+        slot.appendChild(el("span", "dl-version-pill", '<span class="dot"></span> ' + parts.join(" · ")));
       }
 
       function platformCard(label, asset, opts) {
@@ -226,10 +225,10 @@
         var card = el("div", "dl-card" + (opts.primary ? " primary" : ""));
         card.appendChild(el("span", "dl-os", label));
         if (!asset) {
-          card.appendChild(el("p", "text-2xs", "Not published in this release."));
+          card.appendChild(el("p", "text-2xs", "Not published yet."));
           return card;
         }
-        card.appendChild(el("span", "dl-meta", bytes(asset.size)));
+        card.appendChild(el("span", "dl-meta", asset.name + " · " + bytes(asset.size)));
         var btn = el("a", "btn " + (opts.primary ? "btn-primary" : "btn-ghost") + " btn-block");
         btn.href = asset.browser_download_url;
         btn.textContent = "Download";
@@ -241,16 +240,29 @@
           alt.setAttribute("rel", "noreferrer");
           card.appendChild(alt);
         }
+        if (opts.note) card.appendChild(el("p", "text-2xs", opts.note));
         return card;
       }
 
-      function render(release) {
-        renderVersionPill(release);
-        var assets = release.assets || [];
-        var macArm = findAsset(assets, function (n) { return /aarch64\.dmg$/.test(n); });
-        var macIntel = findAsset(assets, function (n) { return /_x64\.dmg$/.test(n); });
-        var winExe = findAsset(assets, function (n) { return /x64-setup\.exe$/.test(n); });
-        var winMsi = findAsset(assets, function (n) { return /x64.*\.msi$/.test(n); });
+      // Newest release whose tag starts with the given prefix (the list comes back newest first).
+      function newest(releases, prefix) {
+        for (var i = 0; i < releases.length; i++) {
+          var r = releases[i];
+          if (!r.draft && !r.prerelease && r.tag_name.indexOf(prefix) === 0) return r;
+        }
+        return null;
+      }
+
+      function render(releases) {
+        var mac = newest(releases, "swift-v");
+        var win = newest(releases, "windows-v");
+        renderVersionPill(mac, win);
+        var macAssets = (mac && mac.assets) || [];
+        var winAssets = (win && win.assets) || [];
+        var macArm = findAsset(macAssets, function (n) { return /AppleSilicon\.dmg$/.test(n); });
+        var macIntel = findAsset(macAssets, function (n) { return /Intel\.dmg$/.test(n); });
+        var winX64 = findAsset(winAssets, function (n) { return /win-x64\.zip$/.test(n); });
+        var winArm = findAsset(winAssets, function (n) { return /win-arm64\.zip$/.test(n); });
 
         var ua = navigator.userAgent;
         var isMac = /Mac/.test(ua);
@@ -259,26 +271,17 @@
         var content = document.getElementById("dl-content");
         content.innerHTML = "";
         var grid = el("div", "dl-grid");
-        grid.appendChild(platformCard("macOS — Apple Silicon", macArm, { primary: isMac }));
-        grid.appendChild(
-          platformCard("macOS — Intel", macIntel, { primary: false })
-        );
-        grid.appendChild(
-          platformCard("Windows", winExe, {
-            primary: isWindows,
-            altAsset: winMsi,
-            altLabel: "Prefer an .msi? Get that instead",
-          })
-        );
+        grid.appendChild(platformCard("macOS 15 or later — Apple Silicon", macArm, {
+          primary: isMac,
+          altAsset: macIntel, altLabel: "Intel Mac? Get the Intel build instead",
+          note: "Right-click the app and choose Open the first time — macOS asks because this build isn't notarized yet.",
+        }));
+        grid.appendChild(platformCard("Windows 10 / 11 — 64-bit", winX64, {
+          primary: isWindows,
+          altAsset: winArm, altLabel: "Windows on ARM? Get the ARM64 build instead",
+          note: "Unzip and run CraftPanel.exe. Nothing to install. If SmartScreen warns, choose More info, then Run anyway — the app isn't code-signed yet.",
+        }));
         content.appendChild(grid);
-
-        if (release.body && release.body.trim()) {
-          var notesWrap = el("div", "dl-notes");
-          var pre = document.createElement("pre");
-          pre.textContent = release.body; // textContent, never innerHTML — release notes are untrusted text
-          notesWrap.appendChild(pre);
-          content.appendChild(notesWrap);
-        }
 
         var ghLink = el("p", "price-note", "");
         var a = el("a", "", "Every release, every platform, every checksum → GitHub Releases");
@@ -313,15 +316,15 @@
           if (!raw) return null;
           var parsed = JSON.parse(raw);
           if (Date.now() - parsed.at > CACHE_TTL_MS) return null;
-          return parsed.release;
+          return parsed.releases;
         } catch (e) {
           return null;
         }
       }
 
-      function toCache(release) {
+      function toCache(releases) {
         try {
-          sessionStorage.setItem(CACHE_KEY, JSON.stringify({ at: Date.now(), release: release }));
+          sessionStorage.setItem(CACHE_KEY, JSON.stringify({ at: Date.now(), releases: releases }));
         } catch (e) {
           /* private browsing / quota — fine, just skip caching */
         }
@@ -332,21 +335,21 @@
         render(cached);
       }
 
-      fetch("https://api.github.com/repos/" + REPO + "/releases/latest", {
+      fetch("https://api.github.com/repos/" + REPO + "/releases?per_page=30", {
         headers: { Accept: "application/vnd.github+json" },
       })
         .then(function (r) {
           if (!r.ok) throw new Error("GitHub API returned " + r.status);
           return r.json();
         })
-        .then(function (release) {
-          toCache(release);
-          render(release);
+        .then(function (releases) {
+          toCache(releases);
+          render(releases);
         })
         .catch(function (err) {
           if (!cached) {
             renderFallback(
-              "Couldn't load the latest release right now (GitHub's API is rate-limited for anonymous requests)."
+              "Couldn't load the releases right now (GitHub's API is rate-limited for anonymous requests)."
             );
           }
           console.warn("CraftPanel downloads: release fetch failed —", err);
