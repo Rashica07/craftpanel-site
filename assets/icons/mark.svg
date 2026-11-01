@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <defs></defs>
+  <g transform="translate(100 100) scale(0.8046875)">
+    
+    <polygon points="512.0,150.0 762.0,295.0 512.0,440.0 262.0,295.0" fill="#E0586B" stroke="#E0586B" stroke-width="18" stroke-linejoin="round"/>
+    <polygon points="262.0,295.0 512.0,440.0 512.0,725.0 262.0,580.0" fill="#C83246" stroke="#C83246" stroke-width="18" stroke-linejoin="round"/>
+    <polygon points="512.0,440.0 762.0,295.0 762.0,580.0 512.0,725.0" fill="#A8283A" stroke="#A8283A" stroke-width="18" stroke-linejoin="round"/>
+    <line x1="387.0" y1="222.5" x2="637.0" y2="367.5" stroke="#8F2230" stroke-width="16" stroke-linecap="round"/>
+    <line x1="637.0" y1="222.5" x2="387.0" y2="367.5" stroke="#8F2230" stroke-width="16" stroke-linecap="round"/>
+    <line x1="387.0" y1="367.5" x2="387.0" y2="652.5" stroke="#7D1D2B" stroke-width="16" stroke-linecap="round"/>
+    <line x1="262.0" y1="437.5" x2="512.0" y2="582.5" stroke="#7D1D2B" stroke-width="16" stroke-linecap="round"/>
+    <line x1="637.0" y1="367.5" x2="637.0" y2="652.5" stroke="#6B1824" stroke-width="16" stroke-linecap="round"/>
+    <line x1="762.0" y1="437.5" x2="512.0" y2="582.5" stroke="#6B1824" stroke-width="16" stroke-linecap="round"/>
+    <line x1="366" y1="795" x2="406" y2="795" stroke="#8f8677" stroke-width="18" stroke-linecap="round"/>
+    <line x1="458" y1="795" x2="660" y2="795" stroke="#8f8677" stroke-width="18" stroke-linecap="round"/>
+    <rect x="424" y="772" width="16" height="46" rx="8" fill="#b9af9f"/>
+    <line x1="366" y1="852" x2="544" y2="852" stroke="#8f8677" stroke-width="18" stroke-linecap="round"/>
+    <line x1="596" y1="852" x2="660" y2="852" stroke="#8f8677" stroke-width="18" stroke-linecap="round"/>
+    <rect x="562" y="829" width="16" height="46" rx="8" fill="#b9af9f"/>
+    <line x1="366" y1="910" x2="447" y2="910" stroke="#8f8677" stroke-width="18" stroke-linecap="round"/>
+    <line x1="499" y1="910" x2="660" y2="910" stroke="#8f8677" stroke-width="18" stroke-linecap="round"/>
+    <rect x="465" y="887" width="16" height="46" rx="8" fill="#b9af9f"/>
+  </g>
+</svg>
