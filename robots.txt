@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://rashica07.github.io/craftpanel-site/sitemap.xml
+Sitemap: https://omniservers.kiqa-dev.it/sitemap.xml
