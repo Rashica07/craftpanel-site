@@ -4,7 +4,7 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>OMNIServers: run Minecraft servers on your own computer</title>
-<meta name="description" content="OMNIServers is a free, open source app for Mac and Windows that sets up, runs and backs up Minecraft servers on your own computer. No accounts, no premium tier." />
+<meta name="description" content="OMNIServers is a free, open source app for Mac, Windows and Linux that sets up, runs and backs up Minecraft servers on your own computer. No accounts, no premium tier." />
 <link rel="canonical" href="https://omniservers.kiqa-dev.it/" />
 <meta name="theme-color" content="#0f0e0d" />
 <link rel="icon" type="image/svg+xml" href="favicon.svg" />
@@ -12,7 +12,7 @@
 <link rel="apple-touch-icon" href="assets/icons/apple-touch-icon.png" />
 <link rel="manifest" href="site.webmanifest" />
 <meta property="og:title" content="OMNIServers" />
-<meta property="og:description" content="Free, open source Minecraft server manager for Mac and Windows." />
+<meta property="og:description" content="Free, open source Minecraft server manager for Mac, Windows and Linux." />
 <meta property="og:image" content="https://omniservers.kiqa-dev.it/assets/icons/icon-512.png" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -27,7 +27,7 @@
     <nav class="nav-links" aria-label="Main">
       <a href="#how">How it works</a>
       <a href="#features">Features</a>
-      <a href="#compare">Compare</a>
+      <a href="#compare-table">Compare</a>
       <a href="#open">Open source</a>
       <a href="#faq">FAQ</a>
     </nav>
@@ -43,14 +43,14 @@
   <div class="wrap">
     <div class="hero-grid">
       <div>
-        <span class="eyebrow"><i class="status-block"></i>Free and open source for Mac and Windows</span>
+        <span class="eyebrow"><i class="status-block"></i>Free and open source for Mac, Windows and Linux</span>
         <h1>Your Minecraft server, running on your computer</h1>
         <p class="lead">Pick a version, press create, and play with friends. OMNIServers sets up the server, watches it and backs it up. Nothing leaves your machine.</p>
         <div class="cta">
           <a class="btn btn-primary" href="downloads.html">Download for free</a>
           <a class="btn btn-ghost" href="#how">See how it works</a>
         </div>
-        <p class="fine">Linux is in progress and not released yet.</p>
+        <p class="fine">Linux is a test build: it runs, but has not been tried on many desktops yet.</p>
       </div>
       <div class="app" aria-label="OMNIServers app preview">
         <div class="app-side">
@@ -137,22 +137,37 @@
 <section id="compare">
   <div class="wrap">
     <div class="section-head">
+      <h2>Five things OMNIServers does well</h2>
+    </div>
+    <div class="features">
+      <div class="feature"><h3>Free, for good</h3><p>GPL-3.0 open source. No premium tier, no ads, no account.</p></div>
+      <div class="feature"><h3>Your computer, your worlds</h3><p>Servers and backups live in a folder you own, not on someone&rsquo;s cloud.</p></div>
+      <div class="feature"><h3>Java and Bedrock</h3><p>Bedrock servers on Windows and Linux, and Bedrock cross-play for Java servers on every platform.</p></div>
+      <div class="feature wide"><h3>Tells you what to open</h3><p>Port rules with presets, clash warnings and a launch checklist, so friends can actually join.</p></div>
+      <div class="feature wide"><h3>One app, three systems</h3><p>Native on Mac, Windows and Linux, with the same look everywhere.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="compare-table">
+  <div class="wrap">
+    <div class="section-head">
       <h2>How it compares</h2>
-      <p>Server managers differ mostly in what they cost and who can read the code.</p>
+      <p>Other ways to run a Minecraft server, as we understand them in November 2026.</p>
     </div>
     <div class="compare">
       <table>
-        <thead><tr><th></th><th class="us">OMNIServers</th><th>Closed-source managers</th></tr></thead>
+        <thead><tr><th></th><th class="us">OMNIServers</th><th>SquidServers</th><th>Aternos</th><th>Minehut</th><th>Crafty Controller</th><th>CubeCoders AMP</th></tr></thead>
         <tbody>
-          <tr><td>Source code</td><td class="us">Open, GPL-3.0</td><td>Closed, you cannot inspect it</td></tr>
-          <tr><td>Premium tier</td><td class="us">None, every feature is free</td><td>Varies by product</td></tr>
-          <tr><td>Where your worlds live</td><td class="us">On your computer</td><td>Varies by product</td></tr>
-          <tr><td>Account needed</td><td class="us">No</td><td>Varies by product</td></tr>
-          <tr><td>Platforms</td><td class="us">Mac and Windows<span class="note">Linux in progress</span></td><td>Varies by product</td></tr>
+          <tr><td>Runs on</td><td class="us">Your computer</td><td>Your computer</td><td>Their cloud</td><td>Their cloud</td><td>Your own machine or server</td><td>Your own machine or server</td></tr>
+          <tr><td>Price</td><td class="us">Free</td><td>Free</td><td>Free with ads</td><td>Free tier, paid plans</td><td>Free</td><td>Paid licence</td></tr>
+          <tr><td>Source code</td><td class="us">Open, GPL-3.0</td><td>Closed</td><td>Closed</td><td>Closed</td><td>Open</td><td>Closed</td></tr>
+          <tr><td>Interface</td><td class="us">Desktop app</td><td>Desktop app</td><td>Website</td><td>Website</td><td>Web panel</td><td>Web panel</td></tr>
+          <tr><td>Always online when your PC is off</td><td class="us">No</td><td>No</td><td>Yes, with limits</td><td>Yes, with limits</td><td>If it runs on a server</td><td>If it runs on a server</td></tr>
         </tbody>
       </table>
     </div>
-    <p class="footnote">We list only what we can state about our own app. Check any other product&rsquo;s current terms before you choose.</p>
+    <p class="footnote">Based on what each product says publicly. Plans and terms change, so check their sites, and tell us on Discord if we got something wrong.</p>
   </div>
 </section>
 
@@ -181,7 +196,7 @@
     <div class="faq">
       <details><summary>Is it really free?</summary><p>Yes. Every feature and every theme is included. There is no premium tier, no trial and no key to enter.</p></details>
       <details><summary>Do I need an account?</summary><p>No. OMNIServers runs on your computer and does not ask you to sign up for anything.</p></details>
-      <details><summary>Will it work on Linux?</summary><p>A Linux build is in progress. It is not released yet, so for now OMNIServers is available for Mac and Windows.</p></details>
+      <details><summary>Will it work on Linux?</summary><p>Yes, there is a Linux test build for x64 and ARM64 on the downloads page. It is newer than the Mac and Windows apps and has had less testing, and the tunnel and in-app updates are not in it yet.</p></details>
       <details><summary>I used CraftPanel. Is this the same app?</summary><p>Yes. CraftPanel is now called OMNIServers. Your servers, worlds and settings stay where they were and the app updates in place.</p></details>
       <details><summary>Where can I get help?</summary><p>Join the <a href="https://discord.gg/SQwCjE38Jt" style="color:var(--crimson-text)">Discord</a>. The invite never expires and you get the member role as soon as you join.</p></details>
       <details><summary>Where are my worlds stored?</summary><p>In a folder on your own computer. You can open it from the app at any time.</p></details>

@@ -133,12 +133,12 @@ h2 { margin: 0 0 16px; font-weight: 500; font-size: clamp(28px, 3.4vw, 40px); li
 .feature .icon svg { width: 18px; height: 18px; stroke: var(--ink-2); fill: none; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
 
 /* comparison */
-.compare { border: 1px solid var(--line); border-radius: 16px; overflow: hidden; background: var(--surface); }
-.compare table { width: 100%; border-collapse: collapse; font-size: 15px; }
+.compare { border: 1px solid var(--line); border-radius: 16px; overflow-x: auto; background: var(--surface); }
+.compare table { width: 100%; min-width: 760px; border-collapse: collapse; font-size: 15px; }
 .compare th, .compare td { text-align: left; padding: 18px 24px; border-top: 1px solid var(--line); vertical-align: top; }
 .compare thead th { border-top: 0; font-weight: 500; color: var(--ink-3); font-size: 13px; }
 .compare thead th.us { color: var(--ink); }
-.compare td:first-child { color: var(--ink); width: 36%; }
+.compare td:first-child { color: var(--ink); width: 18%; }
 .compare td { color: var(--ink-2); }
 .compare td.us { color: var(--ink); background: var(--surface-2); }
 .compare .note { color: var(--ink-3); font-size: 13px; display: block; margin-top: 2px; }

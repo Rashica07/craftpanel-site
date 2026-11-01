@@ -1,7 +1,7 @@
 {
   "name": "OMNIServers",
   "short_name": "OMNIServers",
-  "description": "A free, open source Minecraft server manager for Mac and Windows.",
+  "description": "A free, open source Minecraft server manager for Mac, Windows and Linux.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#0f0e0d",

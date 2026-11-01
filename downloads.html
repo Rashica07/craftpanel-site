@@ -4,7 +4,7 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Download OMNIServers</title>
-<meta name="description" content="Download OMNIServers for Mac and Windows. Free and open source, no account needed." />
+<meta name="description" content="Download OMNIServers for Mac, Windows and Linux. Free and open source, no account needed." />
 <link rel="canonical" href="https://omniservers.kiqa-dev.it/downloads.html" />
 <meta name="theme-color" content="#0f0e0d" />
 <link rel="icon" type="image/svg+xml" href="favicon.svg" />
@@ -40,14 +40,14 @@
     <div class="wrap">
       <div class="section-head">
         <h1 style="font-size:clamp(32px,4vw,48px);margin-top:0">Download OMNIServers</h1>
-        <p>Free for Mac and Windows. This page shows what is published on GitHub Releases right now.</p>
+        <p>Free for Mac, Windows and Linux. This page shows what is published on GitHub Releases right now.</p>
         <div id="version-pill-slot" style="margin-top:16px"></div>
       </div>
       <div id="dl-content">
         <div class="dl-grid" id="placeholder">
           <div class="dl"><h3>macOS</h3><p>Loading…</p></div>
           <div class="dl"><h3>Windows</h3><p>Loading…</p></div>
-          <div class="dl"><h3>Linux <span class="badge-soon">In progress</span></h3><p>A Linux build is being worked on and is not released yet.</p></div>
+          <div class="dl"><h3>Linux</h3><p>Loading…</p></div>
         </div>
       </div>
     </div>
@@ -88,10 +88,10 @@
     a.href = href; a.rel = "noreferrer";
     return a;
   }
-  function newest(releases, prefix) {
+  function newest(releases, prefix, allowPre) {
     for (var i = 0; i < releases.length; i++) {
       var r = releases[i];
-      if (!r.draft && !r.prerelease && r.tag_name.indexOf(prefix) === 0) return r;
+      if (!r.draft && (allowPre || !r.prerelease) && r.tag_name.indexOf(prefix) === 0) return r;
     }
     return null;
   }
@@ -118,6 +118,9 @@
     var macIntel = findAsset(macAssets, function (n) { return /Intel\.dmg$/.test(n); });
     var winX64 = findAsset(winAssets, function (n) { return /win-x64\.zip$/.test(n); });
     var winArm = findAsset(winAssets, function (n) { return /win-arm64\.zip$/.test(n); });
+    var lin = newest(releases, "linux-v", true), linAssets = (lin && lin.assets) || [];
+    var linX64 = findAsset(linAssets, function (n) { return /linux-x64\.tar\.gz$/.test(n); });
+    var linArm = findAsset(linAssets, function (n) { return /linux-arm64\.tar\.gz$/.test(n); });
     var ua = navigator.userAgent, isMac = /Mac/.test(ua), isWin = /Win/.test(ua);
 
     var content = document.getElementById("dl-content");
@@ -131,10 +134,10 @@
       primary: isWin, alt: winArm, altLabel: "ARM64 build",
       note: "Windows 10 or 11. Unzip and run the app, nothing to install. If SmartScreen warns, choose More info, then Run anyway, because the app is not code-signed yet."
     }));
-    var linux = el("div", "dl");
-    linux.appendChild(el("h3", "", 'Linux <span class="badge-soon">In progress</span>'));
-    linux.appendChild(el("p", "", "A Linux build is being worked on and is not released yet."));
-    grid.appendChild(linux);
+    grid.appendChild(card("Linux", lin, linX64, {
+      primary: /Linux/.test(ua) && !/Android/.test(ua), alt: linArm, altLabel: "ARM64 build",
+      note: "Test build. Unpack the archive and run ./omniservers. It has had little testing on real desktops, and the tunnel and in-app updates are not in it yet."
+    }));
     content.appendChild(grid);
     content.appendChild(el("p", "footnote")).appendChild(link("All releases and checksums on GitHub", RELEASES_URL));
 
@@ -143,6 +146,7 @@
     var parts = [];
     if (mac) parts.push("Mac " + versionOf(mac));
     if (win) parts.push("Windows " + versionOf(win));
+    if (lin) parts.push("Linux " + versionOf(lin));
     if (parts.length) slot.appendChild(el("span", "eyebrow mono", '<i class="status-block"></i>' + parts.join(" · ")));
   }
 
