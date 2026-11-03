@@ -4,7 +4,7 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Download OMNIServers</title>
-<meta name="description" content="Download OMNIServers for Mac, Windows and Linux. Free and open source, no account needed." />
+<meta name="description" content="Download OMNIServers for Mac, Windows, Linux and Android. Free and open source, no account needed." />
 <link rel="canonical" href="https://omniservers.kiqa-dev.it/downloads.html" />
 <meta name="theme-color" content="#0f0e0d" />
 <link rel="icon" type="image/svg+xml" href="favicon.svg" />
@@ -40,7 +40,7 @@
     <div class="wrap">
       <div class="section-head">
         <h1 style="font-size:clamp(32px,4vw,48px);margin-top:0">Download OMNIServers</h1>
-        <p>Free for Mac, Windows and Linux. This page shows what is published on GitHub Releases right now.</p>
+        <p>Free for Mac, Windows, Linux and Android. This page shows what is published on GitHub Releases right now; missing assets are never linked.</p>
         <div id="version-pill-slot" style="margin-top:16px"></div>
       </div>
       <div id="dl-content">
@@ -48,6 +48,7 @@
           <div class="dl"><h3>macOS</h3><p>Loading…</p></div>
           <div class="dl"><h3>Windows</h3><p>Loading…</p></div>
           <div class="dl"><h3>Linux</h3><p>Loading…</p></div>
+          <div class="dl"><h3>Android</h3><p>Not published yet.</p></div>
         </div>
       </div>
     </div>
@@ -96,6 +97,15 @@
     return null;
   }
   function versionOf(r) { return r ? r.tag_name.replace(/^[a-z]+-v/, "") : ""; }
+  function latestAsset(releases, test) {
+    for (var i = 0; i < releases.length; i++) {
+      var r = releases[i];
+      if (r.draft || r.prerelease) continue;
+      var asset = findAsset(r.assets || [], test);
+      if (asset) return { release: r, asset: asset };
+    }
+    return { release: null, asset: null };
+  }
 
   function card(title, release, asset, o) {
     var c = el("div", "dl");
@@ -111,32 +121,37 @@
   }
 
   function render(releases) {
-    var mac = newest(releases, "swift-v");
-    var win = newest(releases, "windows-v");
-    var macAssets = (mac && mac.assets) || [], winAssets = (win && win.assets) || [];
-    var macArm = findAsset(macAssets, function (n) { return /AppleSilicon\.dmg$/.test(n); });
-    var macIntel = findAsset(macAssets, function (n) { return /Intel\.dmg$/.test(n); });
-    var winX64 = findAsset(winAssets, function (n) { return /win-x64\.zip$/.test(n); });
-    var winArm = findAsset(winAssets, function (n) { return /win-arm64\.zip$/.test(n); });
-    var lin = newest(releases, "linux-v", true), linAssets = (lin && lin.assets) || [];
-    var linX64 = findAsset(linAssets, function (n) { return /linux-x64\.tar\.gz$/.test(n); });
-    var linArm = findAsset(linAssets, function (n) { return /linux-arm64\.tar\.gz$/.test(n); });
+    // Search all published releases rather than assuming every platform is
+    // uploaded to one tag. This supports the existing platform-specific tags
+    // and future unified releases while never inventing a missing URL.
+    var macArm = latestAsset(releases, function (n) { return /(?:AppleSilicon|aarch64|arm64).*\.dmg$/i.test(n); });
+    var macIntel = latestAsset(releases, function (n) { return /(?:Intel|x86_64|x64).*\.dmg$/i.test(n); });
+    var winX64 = latestAsset(releases, function (n) { return /win-(?:x64|x86_64)\.zip$/i.test(n); });
+    var winArm = latestAsset(releases, function (n) { return /win-arm64\.zip$/i.test(n); });
+    var linX64 = latestAsset(releases, function (n) { return /linux-(?:x64|x86_64)\.(?:tar\.gz|AppImage|deb)$/i.test(n); });
+    var linArm = latestAsset(releases, function (n) { return /linux-arm64\.(?:tar\.gz|AppImage|deb)$/i.test(n); });
+    var androidApk = latestAsset(releases, function (n) { return /\.apk$/i.test(n); });
+    var androidAab = latestAsset(releases, function (n) { return /\.aab$/i.test(n); });
     var ua = navigator.userAgent, isMac = /Mac/.test(ua), isWin = /Win/.test(ua);
 
     var content = document.getElementById("dl-content");
     content.innerHTML = "";
     var grid = el("div", "dl-grid");
-    grid.appendChild(card("macOS", mac, macArm, {
-      primary: isMac, alt: macIntel, altLabel: "Intel build",
+    grid.appendChild(card("macOS", macArm.release, macArm.asset, {
+      primary: isMac, alt: macIntel.asset, altLabel: "Intel build",
       note: "Apple Silicon, macOS 15 or later. The first time, right-click the app and choose Open, because this build is not notarized yet."
     }));
-    grid.appendChild(card("Windows", win, winX64, {
-      primary: isWin, alt: winArm, altLabel: "ARM64 build",
+    grid.appendChild(card("Windows", winX64.release, winX64.asset, {
+      primary: isWin, alt: winArm.asset, altLabel: "ARM64 build",
       note: "Windows 10 or 11. Unzip and run the app, nothing to install. If SmartScreen warns, choose More info, then Run anyway, because the app is not code-signed yet."
     }));
-    grid.appendChild(card("Linux", lin, linX64, {
-      primary: /Linux/.test(ua) && !/Android/.test(ua), alt: linArm, altLabel: "ARM64 build",
+    grid.appendChild(card("Linux", linX64.release, linX64.asset, {
+      primary: /Linux/.test(ua) && !/Android/.test(ua), alt: linArm.asset, altLabel: "ARM64 build",
       note: "Test build. Unpack the archive and run ./omniservers. It has had little testing on real desktops, and the tunnel and in-app updates are not in it yet."
+    }));
+    grid.appendChild(card("Android", androidApk.release, androidApk.asset, {
+      primary: /Android/.test(ua), alt: androidAab.asset, altLabel: "AAB bundle",
+      note: "APK for direct installation. The AAB is intended for app-store distribution; neither proves local Minecraft/Paper hosting."
     }));
     content.appendChild(grid);
     content.appendChild(el("p", "footnote")).appendChild(link("All releases and checksums on GitHub", RELEASES_URL));
@@ -144,9 +159,10 @@
     var slot = document.getElementById("version-pill-slot");
     slot.innerHTML = "";
     var parts = [];
-    if (mac) parts.push("Mac " + versionOf(mac));
-    if (win) parts.push("Windows " + versionOf(win));
-    if (lin) parts.push("Linux " + versionOf(lin));
+    if (macArm.release) parts.push("Mac " + versionOf(macArm.release));
+    if (winX64.release) parts.push("Windows " + versionOf(winX64.release));
+    if (linX64.release) parts.push("Linux " + versionOf(linX64.release));
+    if (androidApk.release) parts.push("Android " + versionOf(androidApk.release));
     if (parts.length) slot.appendChild(el("span", "eyebrow mono", '<i class="status-block"></i>' + parts.join(" · ")));
   }
 
