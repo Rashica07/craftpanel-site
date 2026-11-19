@@ -53,6 +53,15 @@
       </div>
     </div>
   </section>
+  <section>
+    <div class="wrap">
+      <div class="section-head">
+        <h2 style="margin-top:0">OMNI Launcher <span class="eyebrow mono">Dev build</span></h2>
+        <p>The Minecraft launcher that opens from the Play Minecraft icon in OMNIServers. These are early development builds: unsigned, and still being tested. Not an official Minecraft product.</p>
+      </div>
+      <div id="launcher-content"><div class="dl-grid"><div class="dl"><h3>OMNI Launcher</h3><p>Loading…</p></div></div></div>
+    </div>
+  </section>
 </main>
 
 <footer>
@@ -198,6 +207,37 @@
       render(releases);
     })
     .catch(function (err) { if (!cached) fallback(); console.warn("OMNIServers downloads: release fetch failed", err); });
+})();
+
+(function () {
+  var REPO = "Rashica07/omni-launcher";
+  var box = document.getElementById("launcher-content");
+  function el(tag, cls, html) { var e = document.createElement(tag); if (cls) e.className = cls; if (html !== undefined) e.innerHTML = html; return e; }
+  function mb(n) { return (n / 1048576).toFixed(1) + " MB"; }
+  var PLATFORMS = [
+    ["macOS", /macos-arm64\.zip$/i, "Apple Silicon, macOS 12 or later. Right-click the app and choose Open the first time: it is not notarized."],
+    ["Windows", /windows-x64\.zip$/i, "Windows 10 or 11, 64-bit. Unzip and run. SmartScreen may warn because the build is not code-signed."],
+    ["Linux", /linux-x64\.tar\.gz$/i, "64-bit. Unpack the archive and run ./omni-launcher."]
+  ];
+  function fail() { box.innerHTML = ""; var p = el("p", "lead", "The builds could not be loaded right now. "); var a = el("a", "", "Open GitHub Releases."); a.href = "https://github.com/" + REPO + "/releases"; a.rel = "noreferrer"; p.appendChild(a); box.appendChild(p); }
+  fetch("https://api.github.com/repos/" + REPO + "/releases?per_page=10", { headers: { Accept: "application/vnd.github+json" } })
+    .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
+    .then(function (releases) {
+      var live = releases.filter(function (r) { return !r.draft; });
+      var grid = el("div", "dl-grid");
+      PLATFORMS.forEach(function (p) {
+        var c = el("div", "dl"); c.appendChild(el("h3", "", p[0]));
+        var hit = null;
+        live.some(function (r) { return (r.assets || []).some(function (a) { if (p[1].test(a.name)) { hit = { r: r, a: a }; return true; } }); });
+        if (!hit) { c.appendChild(el("p", "", "Not published yet.")); grid.appendChild(c); return; }
+        c.appendChild(el("div", "ver mono", hit.r.tag_name.replace(/^omni-launcher-v/, "") + " (dev) · " + mb(hit.a.size)));
+        c.appendChild(el("p", "", p[2]));
+        var row = el("div", "row"); var a = el("a", "btn btn-ghost", "Download"); a.href = hit.a.browser_download_url; a.rel = "noreferrer"; row.appendChild(a); c.appendChild(row);
+        grid.appendChild(c);
+      });
+      box.innerHTML = ""; box.appendChild(grid);
+    })
+    .catch(fail);
 })();
 </script>
 </body>
